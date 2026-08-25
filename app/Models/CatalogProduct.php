@@ -87,7 +87,7 @@ class CatalogProduct extends Model
 
         // Rutas relativas (ej. "catalog/xyz.jpg") vienen del storage público del
         // CRM, que vive en la raíz del dominio, no bajo /api/v1.
-        $raiz = preg_replace('#/api/v1/?$#', '', (string) config('crm.base_url'));
+        $raiz = preg_replace('#/api/v1/?$#', '', (string) Setting::get('crm_base_url', config('crm.base_url')));
         return rtrim($raiz, '/') . '/storage/' . ltrim($valor, '/');
     }
 

@@ -2,34 +2,54 @@
 
 namespace App\Services;
 
+use App\Models\Setting;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
  * Cliente de solo lectura para la API pública de catálogos del CRM
  * (CRM_AUTOMATIZADOR). Usa la CRM_CATALOG_API_KEY (dedicada, solo lectura)
- * configurada en config/crm.php — nunca el API Token general del CRM.
+ * — nunca el API Token general del CRM.
+ *
+ * Cada valor primero revisa Setting (lo que el admin haya guardado desde el
+ * panel Configuración) y si no hay nada ahí, cae al .env — así una edición
+ * desde el panel aplica al instante sin necesitar redeploy.
  */
 class CrmCatalogClient
 {
+    private function baseUrlConfigurada(): string
+    {
+        return Setting::get('crm_base_url', config('crm.base_url')) ?? '';
+    }
+
+    private function tenantSlug(): ?string
+    {
+        return Setting::get('crm_tenant_slug', config('crm.tenant_slug'));
+    }
+
+    private function apiKey(): ?string
+    {
+        return Setting::get('crm_catalog_api_key', config('crm.catalog_api_key'));
+    }
+
     private function baseUrl(): string
     {
-        return rtrim((string) config('crm.base_url'), '/') . '/' . config('crm.tenant_slug');
+        return rtrim($this->baseUrlConfigurada(), '/') . '/' . $this->tenantSlug();
     }
 
     private function configured(): bool
     {
-        return (bool) config('crm.base_url') && (bool) config('crm.tenant_slug') && (bool) config('crm.catalog_api_key');
+        return (bool) $this->baseUrlConfigurada() && (bool) $this->tenantSlug() && (bool) $this->apiKey();
     }
 
     private function get(string $path, array $params = []): array
     {
         if (! $this->configured()) {
-            return ['success' => false, 'error' => 'Conexión al CRM no configurada (revisa CRM_BASE_URL, CRM_TENANT_SLUG, CRM_CATALOG_API_KEY en el .env).'];
+            return ['success' => false, 'error' => 'Conexión al CRM no configurada — revísala en el panel, pestaña Configuración.'];
         }
 
         try {
-            $response = Http::withHeaders(['X-API-Key' => config('crm.catalog_api_key')])
+            $response = Http::withHeaders(['X-API-Key' => $this->apiKey()])
                 ->timeout(15)
                 ->get($this->baseUrl() . '/' . ltrim($path, '/'), $params);
 

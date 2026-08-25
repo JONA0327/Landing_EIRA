@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CatalogProduct;
 use App\Models\Region;
+use App\Models\Setting;
 use App\Services\CrmCatalogClient;
 use App\Services\GroqClient;
 use Illuminate\Http\RedirectResponse;
@@ -26,7 +27,7 @@ class PanelController extends Controller
         return view('admin.regiones', compact('regiones'));
     }
 
-    public function catalogo(GroqClient $groq): View
+    public function catalogo(GroqClient $groq, CrmCatalogClient $crm): View
     {
         $productos = CatalogProduct::with('regions')->orderBy('orden')->orderBy('id')->get();
         $regiones  = Region::orderBy('orden')->get();
@@ -34,48 +35,128 @@ class PanelController extends Controller
         return view('admin.catalogo', [
             'productos'       => $productos,
             'regiones'        => $regiones,
-            'crmConfigurado'  => (bool) config('crm.base_url') && (bool) config('crm.tenant_slug') && (bool) config('crm.catalog_api_key') && (bool) config('crm.catalog_module'),
+            'crmConfigurado'  => $this->crmConfigurado(),
             'groqConfigurado' => $groq->configurado(),
         ]);
     }
 
+    private function crmConfigurado(): bool
+    {
+        return (bool) Setting::get('crm_base_url', config('crm.base_url'))
+            && (bool) Setting::get('crm_tenant_slug', config('crm.tenant_slug'))
+            && (bool) Setting::get('crm_catalog_api_key', config('crm.catalog_api_key'))
+            && (bool) Setting::get('crm_catalog_module', config('crm.catalog_module'));
+    }
+
     /**
-     * Estado de solo lectura de las conexiones externas (CRM, Groq, panel) —
-     * se lee directo de config()/env, nunca permite editar aquí (las claves
-     * se cambian en el .env del servidor, por seguridad).
+     * Campos editables desde el panel → clave en `settings` + su valor de
+     * respaldo (.env) + si es secreto (se enmascara y nunca se pre-llena en
+     * el formulario, para no exponerlo ni arriesgar un borrado accidental).
+     */
+    private function camposConfiguracion(): array
+    {
+        return [
+            [
+                'grupo' => 'CRM — Catálogo de productos', 'key' => 'crm_base_url', 'env' => 'CRM_BASE_URL',
+                'label' => 'URL base del CRM', 'secreto' => false, 'placeholder' => 'https://tu-crm.com/api/v1',
+                'valor' => Setting::get('crm_base_url', config('crm.base_url')),
+            ],
+            [
+                'grupo' => 'CRM — Catálogo de productos', 'key' => 'crm_tenant_slug', 'env' => 'CRM_TENANT_SLUG',
+                'label' => 'Slug del tenant', 'secreto' => false, 'placeholder' => 'mi-negocio',
+                'valor' => Setting::get('crm_tenant_slug', config('crm.tenant_slug')),
+            ],
+            [
+                'grupo' => 'CRM — Catálogo de productos', 'key' => 'crm_catalog_api_key', 'env' => 'CRM_CATALOG_API_KEY',
+                'label' => 'API Key de catálogo (solo lectura)', 'secreto' => true, 'placeholder' => 'vit_...',
+                'valor' => Setting::get('crm_catalog_api_key', config('crm.catalog_api_key')),
+            ],
+            [
+                'grupo' => 'CRM — Catálogo de productos', 'key' => 'crm_catalog_module', 'env' => 'CRM_CATALOG_MODULE',
+                'label' => 'Módulo del catálogo', 'secreto' => false, 'placeholder' => 'productos',
+                'valor' => Setting::get('crm_catalog_module', config('crm.catalog_module')),
+            ],
+            [
+                'grupo' => 'Groq — IA para descripciones simplificadas', 'key' => 'groq_api_key', 'env' => 'GROQ_API_KEY',
+                'label' => 'API Key', 'secreto' => true, 'placeholder' => 'gsk_...',
+                'valor' => Setting::get('groq_api_key', config('services.groq.key')),
+            ],
+            [
+                'grupo' => 'Groq — IA para descripciones simplificadas', 'key' => 'groq_model', 'env' => 'GROQ_MODEL',
+                'label' => 'Modelo', 'secreto' => false, 'placeholder' => 'openai/gpt-oss-20b',
+                'valor' => Setting::get('groq_model', config('services.groq.model')),
+            ],
+        ];
+    }
+
+    /**
+     * Panel — Configuración: permite editar CRM y Groq desde aquí mismo, sin
+     * tocar el servidor. Se guarda en la tabla `settings`, que tiene
+     * prioridad sobre el .env (ver App\Models\Setting) — así aplica al
+     * instante, incluso con `config:cache` activo en producción.
      */
     public function configuracion(): View
     {
-        $grupos = [
-            [
-                'titulo'      => 'CRM — Catálogo de productos',
-                'descripcion' => 'Conexión de solo lectura al catálogo del CRM (CRM_AUTOMATIZADOR).',
-                'campos'      => [
-                    ['env' => 'CRM_BASE_URL',        'label' => 'URL base del CRM',        'valor' => config('crm.base_url'),        'secreto' => false],
-                    ['env' => 'CRM_TENANT_SLUG',     'label' => 'Slug del tenant',          'valor' => config('crm.tenant_slug'),     'secreto' => false],
-                    ['env' => 'CRM_CATALOG_API_KEY', 'label' => 'API Key de catálogo',      'valor' => config('crm.catalog_api_key'), 'secreto' => true],
-                    ['env' => 'CRM_CATALOG_MODULE',  'label' => 'Módulo del catálogo',      'valor' => config('crm.catalog_module'),  'secreto' => false],
-                ],
-            ],
-            [
-                'titulo'      => 'Groq — IA para descripciones simplificadas',
-                'descripcion' => 'Usada solo al guardar cambios en Catálogo, para generar la versión corta de cada descripción.',
-                'campos'      => [
-                    ['env' => 'GROQ_API_KEY', 'label' => 'API Key',  'valor' => config('services.groq.key'),   'secreto' => true],
-                    ['env' => 'GROQ_MODEL',   'label' => 'Modelo',   'valor' => config('services.groq.model'), 'secreto' => false],
-                ],
-            ],
-            [
-                'titulo'      => 'Panel admin',
-                'descripcion' => 'Configuración de acceso a este mismo panel.',
-                'campos'      => [
-                    ['env' => 'ADMIN_PANEL_PATH', 'label' => 'Ruta oculta del panel', 'valor' => config('panel.path'), 'secreto' => false],
-                    ['env' => 'ADMIN_EMAIL',      'label' => 'Correo del admin',      'valor' => config('panel.admin_email'), 'secreto' => false],
-                ],
-            ],
+        $campos = collect($this->camposConfiguracion())->groupBy('grupo');
+
+        // Ruta del panel y correo del admin quedan fuera de $campos a propósito:
+        // cambiarlos aquí mismo (la ruta secreta de ESTE panel, o el email con
+        // el que entras) es un riesgo real de auto-bloqueo, así que esos dos
+        // se quedan de solo lectura, informativos, editables solo en el .env.
+        $soloLectura = [
+            ['env' => 'ADMIN_PANEL_PATH', 'label' => 'Ruta oculta del panel', 'valor' => config('panel.path')],
+            ['env' => 'ADMIN_EMAIL',      'label' => 'Correo del admin',      'valor' => config('panel.admin_email')],
         ];
 
-        return view('admin.configuracion', compact('grupos'));
+        return view('admin.configuracion', compact('campos', 'soloLectura'));
+    }
+
+    /**
+     * Guarda los campos editables de Configuración en la tabla `settings`.
+     *
+     * Campos normales: lo que llegue manda tal cual (incluso vacío = borra el
+     * override y vuelve a caer al .env) — el admin ve el valor actual en el
+     * input, así que borrarlo es una acción consciente.
+     *
+     * Campos secretos: el input SIEMPRE llega vacío por diseño (nunca se
+     * muestra la clave completa de vuelta) — vacío ahí significa "no lo
+     * toques", para no borrar sin querer. Para borrar un secreto a propósito
+     * hay que marcar su checkbox "Borrar".
+     */
+    public function guardarConfiguracion(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'crm_base_url'        => ['nullable', 'string', 'max:255'],
+            'crm_tenant_slug'     => ['nullable', 'string', 'max:100'],
+            'crm_catalog_api_key' => ['nullable', 'string', 'max:255'],
+            'crm_catalog_module'  => ['nullable', 'string', 'max:100'],
+            'groq_api_key'        => ['nullable', 'string', 'max:255'],
+            'groq_model'          => ['nullable', 'string', 'max:100'],
+            'borrar'              => ['array'],
+            'borrar.*'            => ['string'],
+        ]);
+
+        $borrar = $validated['borrar'] ?? [];
+        $secretos = ['crm_catalog_api_key', 'groq_api_key'];
+
+        foreach ($this->camposConfiguracion() as $campo) {
+            $key = $campo['key'];
+
+            if (in_array($key, $borrar, true)) {
+                Setting::set($key, null);
+                continue;
+            }
+
+            $valor = trim((string) ($validated[$key] ?? ''));
+
+            if (in_array($key, $secretos, true) && $valor === '') {
+                continue; // secreto sin tocar — no pisar lo que ya había
+            }
+
+            Setting::set($key, $valor !== '' ? $valor : null);
+        }
+
+        return back()->with('success', 'Configuración actualizada — ya está en uso.');
     }
 
     /** Nombres de campo posibles para el país/países en el catálogo del CRM. */
@@ -102,10 +183,10 @@ class PanelController extends Controller
      */
     public function sync(CrmCatalogClient $crm): RedirectResponse
     {
-        $modulo = config('crm.catalog_module');
+        $modulo = Setting::get('crm_catalog_module', config('crm.catalog_module'));
 
         if (! $modulo) {
-            return back()->with('error', 'Falta CRM_CATALOG_MODULE en el .env — dime el slug del catálogo (el que ves en el sidebar "Catálogos" del CRM) y lo agrego.');
+            return back()->with('error', 'Falta el "Módulo del catálogo" — configúralo en la pestaña Configuración (el slug que ves en el sidebar "Catálogos" del CRM).');
         }
 
         $resultado = $crm->catalogo($modulo);

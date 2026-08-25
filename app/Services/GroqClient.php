@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Setting;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -28,9 +29,20 @@ Formato exacto:
 No agregues nada antes ni después de eso.
 TXT;
 
+    /** Lo que el admin guardó en el panel (Configuración) manda; si no hay nada, se usa el .env. */
+    private function apiKey(): ?string
+    {
+        return Setting::get('groq_api_key', config('services.groq.key'));
+    }
+
+    private function modelo(): string
+    {
+        return Setting::get('groq_model', config('services.groq.model', 'openai/gpt-oss-20b'));
+    }
+
     public function configurado(): bool
     {
-        return (bool) config('services.groq.key');
+        return (bool) $this->apiKey();
     }
 
     /**
@@ -48,7 +60,7 @@ TXT;
             return null;
         }
 
-        $modelo = config('services.groq.model', 'openai/gpt-oss-20b');
+        $modelo = $this->modelo();
 
         $payload = [
             'model' => $modelo,
@@ -74,7 +86,7 @@ TXT;
         }
 
         try {
-            $respuesta = Http::withToken(config('services.groq.key'))
+            $respuesta = Http::withToken($this->apiKey())
                 ->timeout(20)
                 ->post(self::ENDPOINT, $payload);
 

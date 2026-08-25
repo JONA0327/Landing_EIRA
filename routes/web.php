@@ -79,4 +79,5 @@ Route::prefix(config('panel.path'))->name('admin.')->middleware('auth')->group(f
     Route::post('/productos-regiones', [PanelController::class, 'updateProductRegions'])->name('productos-regiones');
 
     Route::get('/configuracion', [PanelController::class, 'configuracion'])->name('configuracion');
+    Route::post('/configuracion', [PanelController::class, 'guardarConfiguracion'])->name('configuracion.guardar');
 });
