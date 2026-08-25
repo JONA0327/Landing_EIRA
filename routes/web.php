@@ -1,0 +1,73 @@
+<?php
+
+use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\PanelController;
+use App\Http\Controllers\Admin\RegionController;
+use App\Models\CatalogProduct;
+use App\Models\Region;
+use App\Services\IpGeoService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/', function (Request $request, IpGeoService $ipGeo) {
+    // Productos que el admin activó para al menos una región, con sus
+    // regiones cargadas para que el JS de la landing pueda filtrar por país
+    // sin volver a pedirle nada al servidor. Lee la copia local
+    // (catalog_products) — nunca llama al CRM en vivo por cada visitante.
+    $productosDinamicos = CatalogProduct::has('regions')
+        ->with('regions:id,slug')
+        ->orderBy('orden')
+        ->orderBy('id')
+        ->get();
+
+    $regiones = Region::where('activo', true)->with('whatsappNumbers')->orderBy('orden')->get();
+
+    // País sugerido por IP (respeta VPN/proxy, no pide permiso, no depende de
+    // APIs del navegador) — solo se usa como sugerencia inicial si el
+    // visitante no tiene ya un país guardado de una visita anterior; null si
+    // no se pudo determinar o no es uno de los países que manejamos.
+    $paisPorIp = $ipGeo->paisPorIp($request->ip());
+    $ipDetectadaSlug = ($paisPorIp && $regiones->contains('slug', $paisPorIp)) ? $paisPorIp : null;
+
+    // Datos de cada región listos para el JS de la landing (selector de país,
+    // WhatsApp/tienda/dirección dinámicos, mapa) — evita construir el array
+    // dentro del Blade. "whatsapp" es un arreglo (puede haber varios agentes
+    // por país) — el JS elige uno al azar cada vez que se manda un mensaje.
+    $regionesJs = $regiones->mapWithKeys(fn ($r) => [$r->slug => [
+        'nombre'         => $r->nombre,
+        'bandera'        => $r->bandera,
+        'whatsapp'       => $r->whatsappNumbers->pluck('numero')->values(),
+        'direccion'      => $r->direccion,
+        'direccionCorta' => $r->direccion_corta,
+        'lat'            => $r->lat,
+        'lng'            => $r->lng,
+        'tiendaUrl'      => $r->tienda_url,
+        'codigo4life'    => $r->codigo_4life,
+    ]]);
+
+    // JSON_INVALID_UTF8_SUBSTITUTE + el fallback '{}' evitan que un campo con
+    // bytes UTF-8 corruptos (typo, copy-paste raro) tumbe json_encode() y deje
+    // "const REGIONS = ;" — un error de JS que rompería TODA la landing.
+    $regionesJson = json_encode($regionesJs, JSON_INVALID_UTF8_SUBSTITUTE) ?: '{}';
+
+    return view('welcome', compact('productosDinamicos', 'regiones', 'regionesJson', 'ipDetectadaSlug'));
+});
+
+// ── Panel admin oculto ───────────────────────────────────────────────────
+// No hay ningún link a esto desde la landing pública — solo quien conoce
+// esta URL (config('panel.path'), por defecto "panel-4life") puede llegar
+// aquí. La ruta de login se llama exactamente 'login' (sin prefijo en el
+// nombre) porque el middleware `auth` de Laravel redirige con route('login')
+// a secas — con otro nombre de ruta, el redirect automático no funcionaría.
+Route::prefix(config('panel.path'))->middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
+});
+
+Route::prefix(config('panel.path'))->name('admin.')->middleware('auth')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/', [PanelController::class, 'index'])->name('dashboard');
+    Route::post('/sync', [PanelController::class, 'sync'])->name('sync');
+    Route::post('/productos-regiones', [PanelController::class, 'updateProductRegions'])->name('productos-regiones');
+    Route::put('/regiones/{region}', [RegionController::class, 'update'])->name('regiones.update');
+});
