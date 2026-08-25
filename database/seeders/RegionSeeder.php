@@ -18,44 +18,55 @@ class RegionSeeder extends Seeder
         $regiones = [
             [
                 'slug' => 'mx', 'nombre' => 'México', 'bandera' => '🇲🇽', 'orden' => 1,
-                'whatsapp_numero' => '528116642343',
-                'codigo_4life'    => null,
-                'tienda_url'      => 'https://mexico.4life.com',
-                'direccion'       => 'Calle Los Amarantos 201, Col. Los Amarantos, Apodaca, Nuevo León 66613',
-                'direccion_corta' => 'Apodaca, NL',
+                'whatsapp_numeros' => ['528116642343'],
+                'codigo_4life'     => null,
+                'tienda_url'       => 'https://mexico.4life.com',
+                'direccion'        => 'Calle Los Amarantos 201, Col. Los Amarantos, Apodaca, Nuevo León 66613',
+                'direccion_corta'  => 'Apodaca, NL',
                 'lat' => 25.822388160195274, 'lng' => -100.25555491449096,
             ],
             [
                 'slug' => 'co', 'nombre' => 'Colombia', 'bandera' => '🇨🇴', 'orden' => 2,
-                'whatsapp_numero' => null,
-                'codigo_4life'    => null,
-                'tienda_url'      => null,
-                'direccion'       => null,
-                'direccion_corta' => null,
+                'whatsapp_numeros' => [],
+                'codigo_4life'     => null,
+                'tienda_url'       => null,
+                'direccion'        => null,
+                'direccion_corta'  => null,
                 'lat' => 4.710988600000, 'lng' => -74.072092000000,
             ],
             [
                 'slug' => 'us', 'nombre' => 'Estados Unidos', 'bandera' => '🇺🇸', 'orden' => 3,
-                'whatsapp_numero' => null,
-                'codigo_4life'    => null,
-                'tienda_url'      => null,
-                'direccion'       => null,
-                'direccion_corta' => null,
+                'whatsapp_numeros' => [],
+                'codigo_4life'     => null,
+                'tienda_url'       => null,
+                'direccion'        => null,
+                'direccion_corta'  => null,
                 'lat' => null, 'lng' => null,
             ],
             [
                 'slug' => 'cl', 'nombre' => 'Chile', 'bandera' => '🇨🇱', 'orden' => 4,
-                'whatsapp_numero' => null,
-                'codigo_4life'    => null,
-                'tienda_url'      => null,
-                'direccion'       => null,
-                'direccion_corta' => null,
+                'whatsapp_numeros' => [],
+                'codigo_4life'     => null,
+                'tienda_url'       => null,
+                'direccion'        => null,
+                'direccion_corta'  => null,
                 'lat' => -33.447487000000, 'lng' => -70.673676000000,
             ],
         ];
 
-        foreach ($regiones as $region) {
-            Region::updateOrCreate(['slug' => $region['slug']], $region);
+        foreach ($regiones as $datos) {
+            $numeros = $datos['whatsapp_numeros'];
+            unset($datos['whatsapp_numeros']);
+
+            $region = Region::updateOrCreate(['slug' => $datos['slug']], $datos);
+
+            // No pisa números que el admin ya haya agregado a mano — solo
+            // siembra los de arranque si la región todavía no tiene ninguno.
+            if ($region->whatsappNumbers()->count() === 0) {
+                foreach ($numeros as $numero) {
+                    $region->whatsappNumbers()->create(['numero' => $numero]);
+                }
+            }
         }
 
         $this->command?->info('Regiones listas: ' . implode(', ', array_column($regiones, 'nombre')));
