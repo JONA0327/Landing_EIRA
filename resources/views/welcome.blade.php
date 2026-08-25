@@ -1,3 +1,4 @@
+<!-- debug-region: ip_detectada={{ request()->ip() }} pais_detectado={{ $ipDetectadaSlug ?? 'null' }} -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -316,24 +317,36 @@
     let mapMarker = null;
 
     document.addEventListener('DOMContentLoaded', function () {
-        // 1) País guardado de una visita anterior — manda siempre.
+        // 1) Si el visitante ELIGIÓ su país a mano alguna vez (clic en una
+        //    bandera, o en "Cambiar país"), eso manda siempre — nunca se
+        //    pisa solo, ni aunque cambie de IP/red en otra visita.
         const guardado = localStorage.getItem('region_4life');
+        const fueManual = localStorage.getItem('region_4life_manual') === '1';
+        if (guardado && REGIONS[guardado] && fueManual) {
+            aplicarRegion(guardado);
+            return;
+        }
+
+        // 2) País detectado por el servidor a partir de la IP EN ESTA VISITA
+        //    (respeta VPN/proxy, no pide permiso, ya viene resuelto en el
+        //    HTML). A propósito NO se guarda como "manual" — así, si la
+        //    próxima visita viene de otra IP/país, se vuelve a actualizar
+        //    solo en vez de quedarse pegado al primero que detectó.
+        if (PAIS_DETECTADO_POR_IP && REGIONS[PAIS_DETECTADO_POR_IP]) {
+            aplicarRegion(PAIS_DETECTADO_POR_IP);
+            localStorage.setItem('region_4life', PAIS_DETECTADO_POR_IP);
+            return;
+        }
+
+        // 3) No se pudo detectar por IP esta vez (ej. red local) — si hubo
+        //    algo detectado automáticamente en una visita anterior, úsalo
+        //    mientras tanto en lugar de preguntar de nuevo.
         if (guardado && REGIONS[guardado]) {
             aplicarRegion(guardado);
             return;
         }
 
-        // 2) País detectado por el servidor a partir de la IP (respeta
-        //    VPN/proxy, no pide permiso, ya viene resuelto en el HTML — nada
-        //    que esperar ni que se pueda quedar cargando). Se aplica directo,
-        //    sin mostrar el overlay — igual que un país ya guardado, queda
-        //    la píldora "Cambiar país" arriba a la derecha por si no acertó.
-        if (PAIS_DETECTADO_POR_IP && REGIONS[PAIS_DETECTADO_POR_IP]) {
-            seleccionarRegion(PAIS_DETECTADO_POR_IP);
-            return;
-        }
-
-        // 3) No se pudo determinar nada — que elija a mano.
+        // 4) Nada de nada — que elija a mano.
         mostrarSelectorRegion();
     });
 
@@ -341,9 +354,11 @@
         document.getElementById('region-overlay').style.display = 'flex';
     }
 
+    /** Se llama SOLO cuando el visitante elige a mano (clic en una bandera) — esa elección ya no se toca sola. */
     function seleccionarRegion(slug) {
         if (!REGIONS[slug]) return;
         localStorage.setItem('region_4life', slug);
+        localStorage.setItem('region_4life_manual', '1');
         aplicarRegion(slug);
         document.getElementById('region-overlay').style.display = 'none';
     }
