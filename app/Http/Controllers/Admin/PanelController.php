@@ -13,17 +13,69 @@ use Illuminate\View\View;
 
 class PanelController extends Controller
 {
-    public function index(GroqClient $groq): View
+    /** Entrada genérica del panel (ej. /panel-4life) — manda directo a la primera sección. */
+    public function index(): RedirectResponse
+    {
+        return redirect()->route('admin.regiones');
+    }
+
+    public function regiones(): View
+    {
+        $regiones = Region::with('whatsappNumbers')->orderBy('orden')->get();
+
+        return view('admin.regiones', compact('regiones'));
+    }
+
+    public function catalogo(GroqClient $groq): View
     {
         $productos = CatalogProduct::with('regions')->orderBy('orden')->orderBy('id')->get();
-        $regiones  = Region::with('whatsappNumbers')->orderBy('orden')->get();
+        $regiones  = Region::orderBy('orden')->get();
 
-        return view('admin.dashboard', [
-            'productos'      => $productos,
-            'regiones'       => $regiones,
+        return view('admin.catalogo', [
+            'productos'       => $productos,
+            'regiones'        => $regiones,
             'crmConfigurado'  => (bool) config('crm.base_url') && (bool) config('crm.tenant_slug') && (bool) config('crm.catalog_api_key') && (bool) config('crm.catalog_module'),
             'groqConfigurado' => $groq->configurado(),
         ]);
+    }
+
+    /**
+     * Estado de solo lectura de las conexiones externas (CRM, Groq, panel) —
+     * se lee directo de config()/env, nunca permite editar aquí (las claves
+     * se cambian en el .env del servidor, por seguridad).
+     */
+    public function configuracion(): View
+    {
+        $grupos = [
+            [
+                'titulo'      => 'CRM — Catálogo de productos',
+                'descripcion' => 'Conexión de solo lectura al catálogo del CRM (CRM_AUTOMATIZADOR).',
+                'campos'      => [
+                    ['env' => 'CRM_BASE_URL',        'label' => 'URL base del CRM',        'valor' => config('crm.base_url'),        'secreto' => false],
+                    ['env' => 'CRM_TENANT_SLUG',     'label' => 'Slug del tenant',          'valor' => config('crm.tenant_slug'),     'secreto' => false],
+                    ['env' => 'CRM_CATALOG_API_KEY', 'label' => 'API Key de catálogo',      'valor' => config('crm.catalog_api_key'), 'secreto' => true],
+                    ['env' => 'CRM_CATALOG_MODULE',  'label' => 'Módulo del catálogo',      'valor' => config('crm.catalog_module'),  'secreto' => false],
+                ],
+            ],
+            [
+                'titulo'      => 'Groq — IA para descripciones simplificadas',
+                'descripcion' => 'Usada solo al guardar cambios en Catálogo, para generar la versión corta de cada descripción.',
+                'campos'      => [
+                    ['env' => 'GROQ_API_KEY', 'label' => 'API Key',  'valor' => config('services.groq.key'),   'secreto' => true],
+                    ['env' => 'GROQ_MODEL',   'label' => 'Modelo',   'valor' => config('services.groq.model'), 'secreto' => false],
+                ],
+            ],
+            [
+                'titulo'      => 'Panel admin',
+                'descripcion' => 'Configuración de acceso a este mismo panel.',
+                'campos'      => [
+                    ['env' => 'ADMIN_PANEL_PATH', 'label' => 'Ruta oculta del panel', 'valor' => config('panel.path'), 'secreto' => false],
+                    ['env' => 'ADMIN_EMAIL',      'label' => 'Correo del admin',      'valor' => config('panel.admin_email'), 'secreto' => false],
+                ],
+            ],
+        ];
+
+        return view('admin.configuracion', compact('grupos'));
     }
 
     /** Nombres de campo posibles para el país/países en el catálogo del CRM. */

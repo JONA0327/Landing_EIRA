@@ -66,8 +66,17 @@ Route::prefix(config('panel.path'))->middleware('guest')->group(function () {
 
 Route::prefix(config('panel.path'))->name('admin.')->middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    // "/" manda directo a Regiones — admin.dashboard se conserva como alias
+    // por si alguien tiene la URL base guardada.
     Route::get('/', [PanelController::class, 'index'])->name('dashboard');
+
+    Route::get('/regiones', [PanelController::class, 'regiones'])->name('regiones');
+    Route::put('/regiones/{region}', [RegionController::class, 'update'])->name('regiones.update');
+
+    Route::get('/catalogo', [PanelController::class, 'catalogo'])->name('catalogo');
     Route::post('/sync', [PanelController::class, 'sync'])->name('sync');
     Route::post('/productos-regiones', [PanelController::class, 'updateProductRegions'])->name('productos-regiones');
-    Route::put('/regiones/{region}', [RegionController::class, 'update'])->name('regiones.update');
+
+    Route::get('/configuracion', [PanelController::class, 'configuracion'])->name('configuracion');
 });
