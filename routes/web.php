@@ -30,24 +30,20 @@ Route::get('/', function (Request $request, IpGeoService $ipGeo) {
     $ipDetectadaSlug = ($paisPorIp && $regiones->contains('slug', $paisPorIp)) ? $paisPorIp : null;
 
     // Datos de cada región listos para el JS de la landing (selector de país,
-    // WhatsApp/tienda/código/dirección dinámicos, mapa) — evita construir el
-    // array dentro del Blade. "whatsapp", "tiendaUrl", "codigo4life",
-    // "direccion", "direccionCorta", "lat" y "lng" son del agente que está DE
-    // TURNO ahora mismo (rota cada 10 min, ver Region::agenteActivo()) — así
-    // el mismo agente recibe el WhatsApp, el clic de "Comprar", el código Y
-    // la ubicación que se muestra, todo junto, mientras dure su turno, en
+    // WhatsApp/tienda/código dinámicos) — evita construir el array dentro del
+    // Blade. "whatsapp", "tiendaUrl", "codigo4life" y "direccionCorta" son
+    // del agente que está DE TURNO ahora mismo (rota cada 10 min, ver
+    // Region::agenteActivo()) — así el mismo agente recibe el WhatsApp, el
+    // clic de "Comprar" y el código, todo junto, mientras dure su turno, en
     // vez de repartir cada uno a alguien distinto. Si el agente no puso su
-    // propia ubicación, cae a la general de la región.
+    // propia ciudad, cae a la general de la región.
     $regionesJs = $regiones->mapWithKeys(function ($r) {
         $agente = $r->agenteActivo();
         return [$r->slug => [
             'nombre'         => $r->nombre,
             'bandera'        => $r->bandera,
             'whatsapp'       => $agente?->numero,
-            'direccion'      => $agente?->direccion ?: $r->direccion,
             'direccionCorta' => $agente?->direccion_corta ?: $r->direccion_corta,
-            'lat'            => $agente?->lat ?? $r->lat,
-            'lng'            => $agente?->lng ?? $r->lng,
             'tiendaUrl'      => $agente?->tienda_url ?: $r->tienda_url,
             'codigo4life'    => $agente?->codigo_4life ?: $r->codigo_4life,
         ]];

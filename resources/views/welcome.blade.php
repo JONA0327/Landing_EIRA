@@ -8,8 +8,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -56,8 +54,6 @@
         .producto-card-lista li svg { flex-shrink: 0; margin-top: 3px; }
         .precio-pill { display: inline-block; align-self: flex-start; background: linear-gradient(135deg, rgba(8,145,178,.1), rgba(16,185,129,.12)); color: #0891b2; font: 700 15px 'Poppins', sans-serif; padding: 6px 16px; border-radius: 999px; margin-bottom: 18px; }
         .producto-card-categoria { display: inline-block; align-self: flex-start; background: #ecfdf5; color: #059669; font: 600 11px 'Poppins', sans-serif; letter-spacing: .03em; text-transform: uppercase; padding: 4px 11px; border-radius: 999px; margin-bottom: 8px; }
-
-        #map { height: 400px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0, 0, 0, .1); overflow: hidden; }
 
         @media (max-width: 768px) {
             .section-title { font-size: 28px; }
@@ -298,55 +294,6 @@
     </div>
 </section>
 
-{{-- ── UBICACIÓN ─────────────────────────────────────────────────────── --}}
-<section class="p48" style="padding: 80px 20px; background: #fff">
-    <div class="container">
-        <h2 class="section-title" style="display: flex; align-items: center; gap: 12px">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="1.5" style="flex-shrink: 0">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
-            </svg>
-            Nuestra Ubicación
-        </h2>
-        <p class="section-subtitle">Estamos aquí para servirte</p>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start" class="ubicacion-grid">
-            <div>
-                <div id="map"></div>
-                <div id="map-fallback" style="display: none; height: 400px; border-radius: 12px; background: #f0f9ff; align-items: center; justify-content: center; text-align: center; padding: 24px; color: #6b7280; font-size: 14px">
-                    Aún no tenemos un punto físico registrado en tu país.
-                </div>
-            </div>
-            <div>
-                <h3 class="fs24 fw7 mb16" style="color: #0891b2">Visítanos o Contáctanos</h3>
-                <p style="color: #6b7280; margin-bottom: 24px; line-height: 1.8">Estamos aquí para ayudarte con todas tus preguntas sobre bienestar integral con productos 4Life.</p>
-
-                <div id="ubicacion-sin-datos" style="display: none; padding: 16px; background: #fef9c3; border-radius: 8px; color: #854d0e; font-size: 14px; margin-bottom: 32px">
-                    Aún no tenemos información de contacto registrada para tu país — cambia de país arriba a la derecha o vuelve pronto.
-                </div>
-
-                <div id="ubicacion-info" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px">
-                    <div id="bloque-direccion" style="padding: 16px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #0891b2">
-                        <p style="color: #6b7280; font-size: 14px">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2" style="display: inline-block; vertical-align: -2px"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
-                            <strong style="color: #0891b2">Ubicación:</strong> <span data-field="direccion"></span></p>
-                    </div>
-                    <div id="bloque-whatsapp" style="padding: 16px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #0891b2">
-                        <p style="color: #6b7280; font-size: 14px">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2" style="display: inline-block; vertical-align: -2px"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 10.5h7.5m-7.5 3h4.5m4.5-9H5.25A2.25 2.25 0 003 6.75v7.5A2.25 2.25 0 005.25 16.5H9l3 3 3-3h3.75A2.25 2.25 0 0021 14.25v-7.5A2.25 2.25 0 0018.75 4.5z"/></svg>
-                            <strong style="color: #0891b2">WhatsApp:</strong> <a href="#" onclick="abrirWhatsapp('Hola, me interesa saber más sobre 4Life'); return false;" style="color: #0891b2; font-weight: 600; text-decoration: underline">Contacta aquí</a></p>
-                    </div>
-                    <div style="padding: 16px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #0891b2">
-                        <p style="color: #6b7280; font-size: 14px">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2" style="display: inline-block; vertical-align: -2px"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9" stroke-linecap="round"/></svg>
-                            <strong style="color: #0891b2">Disponibilidad:</strong> 24/7</p>
-                    </div>
-                </div>
-                <button class="btn-primary" onclick="abrirWhatsapp('Hola, quiero saber más sobre bienestar 4Life')">Enviar Mensaje WhatsApp</button>
-            </div>
-        </div>
-    </div>
-</section>
-
 {{-- ── CTA FINAL ─────────────────────────────────────────────────────── --}}
 <section class="p48" style="padding: 80px 20px; background: linear-gradient(135deg, #06b6d4 0%, #10b981 50%, #84cc16 100%); color: #fff">
     <div class="container text-center">
@@ -390,19 +337,12 @@
     </div>
 </footer>
 
-<style>
-    @media (max-width: 900px) {
-        .ubicacion-grid { grid-template-columns: 1fr !important; }
-    }
-</style>
 
 <script>
     const REGIONS = {!! $regionesJson !!};
     const PAIS_DETECTADO_POR_IP = {!! json_encode($ipDetectadaSlug) !!};
 
     let currentRegionSlug = null;
-    let mapInstance = null;
-    let mapMarker = null;
 
     document.addEventListener('DOMContentLoaded', function () {
         // 1) Si el visitante ELIGIÓ su país a mano alguna vez (clic en una
@@ -495,16 +435,7 @@
         document.getElementById('region-pill-nombre').textContent = r.nombre;
         document.getElementById('region-pill').style.display = 'inline-flex';
 
-        // Ubicación: dirección y WhatsApp
-        const tieneDireccion = !!r.direccion;
-        const tieneWhatsapp  = !!r.whatsapp;
-        const sinContacto    = !tieneDireccion && !tieneWhatsapp;
-
-        document.getElementById('ubicacion-info').style.display = sinContacto ? 'none' : 'flex';
-        document.getElementById('ubicacion-sin-datos').style.display = sinContacto ? 'block' : 'none';
-        document.getElementById('bloque-direccion').style.display = tieneDireccion ? 'block' : 'none';
-        document.getElementById('bloque-whatsapp').style.display = tieneWhatsapp ? 'block' : 'none';
-        if (tieneDireccion) document.querySelector('#bloque-direccion [data-field="direccion"]').textContent = r.direccion;
+        const tieneWhatsapp = !!r.whatsapp;
 
         // Footer
         document.getElementById('footer-direccion').style.display = r.direccionCorta ? 'block' : 'none';
@@ -521,40 +452,7 @@
             try { link.textContent = new URL(r.tiendaUrl).hostname; } catch (e) { link.textContent = r.tiendaUrl; }
         }
 
-        actualizarMapa(r);
         filtrarProductosPorRegion(slug);
-    }
-
-    function actualizarMapa(r) {
-        const mapEl = document.getElementById('map');
-        const fallbackEl = document.getElementById('map-fallback');
-
-        if (r.lat == null || r.lng == null) {
-            mapEl.style.display = 'none';
-            fallbackEl.style.display = 'flex';
-            return;
-        }
-
-        mapEl.style.display = 'block';
-        fallbackEl.style.display = 'none';
-
-        if (!mapInstance) {
-            setTimeout(function () {
-                mapInstance = L.map('map', { scrollWheelZoom: false }).setView([r.lat, r.lng], 15);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors',
-                    maxZoom: 19
-                }).addTo(mapInstance);
-                mapMarker = L.marker([r.lat, r.lng]).addTo(mapInstance)
-                    .bindPopup('<b style="font-size:14px">' + r.nombre + '</b>' + (r.direccion ? '<br/>' + r.direccion : ''))
-                    .openPopup();
-            }, 300);
-        } else {
-            mapInstance.setView([r.lat, r.lng], 15);
-            mapMarker.setLatLng([r.lat, r.lng]);
-            mapMarker.bindPopup('<b style="font-size:14px">' + r.nombre + '</b>' + (r.direccion ? '<br/>' + r.direccion : ''));
-            setTimeout(function () { mapInstance.invalidateSize(); }, 200);
-        }
     }
 
     function filtrarProductosPorRegion(slug) {

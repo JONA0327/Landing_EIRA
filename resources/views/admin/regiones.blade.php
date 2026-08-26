@@ -30,7 +30,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Agentes de ventas (número + su código, tienda y ubicación propios — rotan de turno cada 10 min, siempre juntos)</label>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Agentes de ventas (número + su código y tienda propios — rotan de turno cada 10 min, siempre juntos)</label>
                     <div class="whatsapp-numeros-list space-y-2">
                         @forelse ($region->whatsappNumbers as $numero)
                             <div class="flex items-start gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200">
@@ -44,20 +44,9 @@
                                     <input type="url" name="whatsapp_tiendas[]" value="{{ $numero->tienda_url }}"
                                            placeholder="URL de la tienda de este agente (opcional)"
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                                    <input type="text" name="whatsapp_direcciones[]" value="{{ $numero->direccion }}"
-                                           placeholder="Dirección completa de este agente (opcional)"
+                                    <input type="text" name="whatsapp_direcciones_cortas[]" value="{{ $numero->direccion_corta }}"
+                                           placeholder="Ciudad, edo. de este agente para el footer (opcional)"
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                                    <div class="grid grid-cols-3 gap-1.5">
-                                        <input type="text" name="whatsapp_direcciones_cortas[]" value="{{ $numero->direccion_corta }}"
-                                               placeholder="Ciudad, edo."
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                                        <input type="text" name="whatsapp_lats[]" value="{{ $numero->lat }}"
-                                               placeholder="Lat"
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                                        <input type="text" name="whatsapp_lngs[]" value="{{ $numero->lng }}"
-                                               placeholder="Lng"
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                                    </div>
                                 </div>
                                 <button type="button" onclick="this.parentElement.remove()"
                                         class="text-red-500 hover:text-red-700 text-lg leading-none px-1.5 pt-1.5" title="Quitar">×</button>
@@ -74,20 +63,9 @@
                                     <input type="url" name="whatsapp_tiendas[]" value=""
                                            placeholder="URL de la tienda de este agente (opcional)"
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                                    <input type="text" name="whatsapp_direcciones[]" value=""
-                                           placeholder="Dirección completa de este agente (opcional)"
+                                    <input type="text" name="whatsapp_direcciones_cortas[]" value=""
+                                           placeholder="Ciudad, edo. de este agente para el footer (opcional)"
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                                    <div class="grid grid-cols-3 gap-1.5">
-                                        <input type="text" name="whatsapp_direcciones_cortas[]" value=""
-                                               placeholder="Ciudad, edo."
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                                        <input type="text" name="whatsapp_lats[]" value=""
-                                               placeholder="Lat"
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                                        <input type="text" name="whatsapp_lngs[]" value=""
-                                               placeholder="Lng"
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                                    </div>
                                 </div>
                                 <button type="button" onclick="this.parentElement.remove()"
                                         class="text-red-500 hover:text-red-700 text-lg leading-none px-1.5 pt-1.5" title="Quitar">×</button>
@@ -113,30 +91,10 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Dirección general del país (respaldo si un agente no tiene la suya — sección Ubicación)</label>
-                    <textarea name="direccion" rows="2"
-                              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old('direccion', $region->direccion) }}</textarea>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Dirección corta general (footer)</label>
-                        <input type="text" name="direccion_corta" value="{{ old('direccion_corta', $region->direccion_corta) }}"
-                               placeholder="Ej. Apodaca, NL"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Lat general</label>
-                            <input type="text" name="lat" value="{{ old('lat', $region->lat) }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Lng general</label>
-                            <input type="text" name="lng" value="{{ old('lng', $region->lng) }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                        </div>
-                    </div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Dirección corta general del país (footer — respaldo si un agente no tiene la suya)</label>
+                    <input type="text" name="direccion_corta" value="{{ old('direccion_corta', $region->direccion_corta) }}"
+                           placeholder="Ej. Apodaca, NL"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                 </div>
 
                 <button type="submit"
@@ -159,12 +117,7 @@
             + '<input type="text" name="whatsapp_numeros[]" placeholder="Número: 521XXXXXXXXXX" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">'
             + '<input type="text" name="whatsapp_codigos[]" placeholder="Código de referido de este agente (opcional)" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">'
             + '<input type="url" name="whatsapp_tiendas[]" placeholder="URL de la tienda de este agente (opcional)" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">'
-            + '<input type="text" name="whatsapp_direcciones[]" placeholder="Dirección completa de este agente (opcional)" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">'
-            + '<div class="grid grid-cols-3 gap-1.5">'
-            + '<input type="text" name="whatsapp_direcciones_cortas[]" placeholder="Ciudad, edo." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">'
-            + '<input type="text" name="whatsapp_lats[]" placeholder="Lat" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">'
-            + '<input type="text" name="whatsapp_lngs[]" placeholder="Lng" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">'
-            + '</div>'
+            + '<input type="text" name="whatsapp_direcciones_cortas[]" placeholder="Ciudad, edo. de este agente para el footer (opcional)" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">'
             + '</div>'
             + '<button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 text-lg leading-none px-1.5 pt-1.5" title="Quitar">×</button>';
         lista.appendChild(fila);
