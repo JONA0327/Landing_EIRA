@@ -1,4 +1,3 @@
-<!-- debug-region: ip_detectada={{ request()->ip() }} pais_detectado={{ $ipDetectadaSlug ?? 'null' }} -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -44,6 +43,20 @@
         .section-title { font: 800 36px 'Poppins', sans-serif; color: #1f2937; margin-bottom: 16px; line-height: 1.2; }
         .section-subtitle { font: 400 16px 'Inter'; color: #6b7280; margin-bottom: 48px; }
 
+        .productos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 32px; }
+        .producto-card { background: #fff; border-radius: 16px; border: 1px solid #eef1f4; box-shadow: 0 2px 10px rgba(15, 23, 42, .05); overflow: hidden; display: flex; flex-direction: column; transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+        .producto-card:hover { transform: translateY(-6px); box-shadow: 0 18px 34px rgba(15, 23, 42, .1); border-color: #cffafe; }
+        .producto-card-img-wrap { width: 100%; height: 210px; background: linear-gradient(180deg, #f8fafc, #eef2f5); overflow: hidden; }
+        .producto-card-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .producto-card-body { padding: 26px; display: flex; flex-direction: column; flex: 1; text-align: left; }
+        .producto-card-titulo { font: 700 20px 'Poppins', sans-serif; color: #0f172a; margin-bottom: 10px; }
+        .producto-card-intro { color: #6b7280; font-size: 14px; line-height: 1.65; text-align: justify; margin-bottom: 16px; }
+        .producto-card-lista { list-style: none; margin: 0 0 20px; padding: 0; }
+        .producto-card-lista li { display: flex; align-items: flex-start; gap: 10px; color: #4b5563; font-size: 13.5px; line-height: 1.55; margin-bottom: 9px; }
+        .producto-card-lista li svg { flex-shrink: 0; margin-top: 3px; }
+        .precio-pill { display: inline-block; align-self: flex-start; background: linear-gradient(135deg, rgba(8,145,178,.1), rgba(16,185,129,.12)); color: #0891b2; font: 700 15px 'Poppins', sans-serif; padding: 6px 16px; border-radius: 999px; margin-bottom: 18px; }
+        .producto-card-categoria { display: inline-block; align-self: flex-start; background: #ecfdf5; color: #059669; font: 600 11px 'Poppins', sans-serif; letter-spacing: .03em; text-transform: uppercase; padding: 4px 11px; border-radius: 999px; margin-bottom: 8px; }
+
         #map { height: 400px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0, 0, 0, .1); overflow: hidden; }
 
         @media (max-width: 768px) {
@@ -60,7 +73,12 @@
 {{-- ── SELECTOR DE PAÍS ─────────────────────────────────────────────── --}}
 <div id="region-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15,23,42,.85); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 20px">
     <div style="background: #fff; border-radius: 16px; max-width: 480px; width: 100%; padding: 40px 32px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.3)">
-        <div style="font-size: 40px; margin-bottom: 12px">🌎</div>
+        <div style="margin-bottom: 12px; color: #0891b2">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" style="margin: 0 auto">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.6 9h16.8M3.6 15h16.8M12 3c2.4 2.5 3.7 5.6 3.7 9s-1.3 6.5-3.7 9c-2.4-2.5-3.7-5.6-3.7-9s1.3-6.5 3.7-9z"/>
+            </svg>
+        </div>
         <h2 style="font: 800 24px 'Poppins', sans-serif; color: #1f2937; margin-bottom: 8px">¿Desde qué país nos visitas?</h2>
         <p style="color: #6b7280; font-size: 14px; margin-bottom: 16px">Así te mostramos los productos, precios y contacto disponibles en tu región</p>
 
@@ -78,7 +96,10 @@
         </div>
 
         <p style="color: #9ca3af; font-size: 11px; margin-top: 20px; line-height: 1.5; text-align: left">
-            🔒 Detectamos tu país automáticamente a partir de tu conexión a internet, solo para mostrarte la atención, productos y contacto correspondientes a tu región — no la guardamos ni la compartimos con nadie. Si no es el país correcto, elígelo tú mismo arriba.
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: -1px; flex-shrink: 0">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V7.5a4.5 4.5 0 10-9 0v3m-1.5 0h12a1.5 1.5 0 011.5 1.5v7.5a1.5 1.5 0 01-1.5 1.5h-12A1.5 1.5 0 014 19.5V12a1.5 1.5 0 011.5-1.5z"/>
+            </svg>
+            Detectamos tu país automáticamente a partir de tu conexión a internet, solo para mostrarte la atención, productos y contacto correspondientes a tu región — no la guardamos ni la compartimos con nadie. Si no es el país correcto, elígelo tú mismo arriba.
         </p>
     </div>
 </div>
@@ -110,83 +131,139 @@
 {{-- ── CATEGORÍAS DESTACADAS ────────────────────────────────────────── --}}
 <section class="p48" style="padding: 80px 20px; background: #fff">
     <div class="container">
-        <h2 class="section-title">🎯 Categorías Destacadas</h2>
+        <h2 class="section-title" style="display: flex; align-items: center; gap: 12px">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="1.5" style="flex-shrink: 0">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75a2.25 2.25 0 012.25-2.25h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+            </svg>
+            Categorías Destacadas
+        </h2>
         <p class="section-subtitle">Soluciones completas para cada aspecto de tu bienestar</p>
 
-        <div class="fx gap24 wrap" style="margin-bottom: 32px">
+        <div class="productos-grid">
         @if ($productosDinamicos->isNotEmpty())
             {{-- Productos activados desde el panel admin (sincronizados del catálogo del CRM) --}}
             @foreach ($productosDinamicos as $producto)
-                <div class="card p32 producto-region-card" data-regions="{{ $producto->regions->pluck('slug')->implode(',') }}"
-                     style="flex: 1; min-width: 280px; cursor: pointer; border: 2px solid #f0f0f0"
-                     onmouseover="this.style.borderColor='#0891b2';this.style.background='#f0f9ff'"
-                     onmouseout="this.style.borderColor='#f0f0f0';this.style.background='#fff'">
-                    <div class="text-center">
+                @php
+                    // La descripción de IA trae: 1a línea = frase intro, siguientes = "• punto".
+                    // Se separan para renderizar viñetas reales (ícono) en vez de "•" en texto plano.
+                    $lineas = collect(preg_split('/\r\n|\r|\n/', $producto->descripcionLanding ?? ''))
+                        ->map(fn ($l) => trim($l))
+                        ->filter(fn ($l) => $l !== '')
+                        ->values();
+                    $intro = null;
+                    $puntos = [];
+                    foreach ($lineas as $linea) {
+                        if (str_starts_with($linea, '•')) {
+                            $puntos[] = trim(ltrim($linea, "• \t"));
+                        } elseif ($intro === null) {
+                            $intro = $linea;
+                        } else {
+                            $puntos[] = $linea;
+                        }
+                    }
+                @endphp
+                <div class="producto-card producto-region-card" data-regions="{{ $producto->regions->pluck('slug')->implode(',') }}">
+                    <div class="producto-card-img-wrap">
                         @if ($producto->imagen)
-                            <img src="{{ $producto->imagen }}" alt="{{ $producto->nombre }}" style="width: 100%; max-width: 200px; height: auto; margin-bottom: 16px; border-radius: 8px; object-fit: contain">
+                            <img src="{{ $producto->imagen }}" alt="{{ $producto->nombre }}" class="producto-card-img">
                         @endif
-                        <h3 class="fs24 fw7" style="margin-bottom: 12px; color: #0891b2">{{ $producto->nombre }}</h3>
-                        @if ($producto->descripcionLanding)
-                            <div style="color: #6b7280; margin-bottom: 20px; text-align: left; white-space: pre-line">{{ $producto->descripcionLanding }}</div>
+                    </div>
+                    <div class="producto-card-body">
+                        @if ($producto->categoria)
+                            <span class="producto-card-categoria">{{ $producto->categoria }}</span>
                         @endif
-                        @if ($producto->precio)
-                            <p style="color: #0891b2; font-weight: 700; margin-bottom: 20px">{{ $producto->precio }}</p>
-                        @endif
-                        <button class="btn-primary w100" style="font-size: 14px; padding: 12px">Ver Productos</button>
+                        <h3 class="producto-card-titulo">{{ $producto->nombre }}</h3>
+                        <div style="flex: 1">
+                            @if ($intro)
+                                <p class="producto-card-intro">{{ $intro }}</p>
+                            @endif
+                            @if (!empty($puntos))
+                                <ul class="producto-card-lista">
+                                    @foreach ($puntos as $punto)
+                                        <li>
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                                            <span>{{ $punto }}</span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                            @if ($producto->precio)
+                                <div class="precio-pill">{{ $producto->precio }}</div>
+                            @endif
+                        </div>
+                        <div class="fx gap8">
+                            <button class="btn-primary" style="flex: 1; font-size: 13px; padding: 12px 6px" onclick="abrirTienda()">Comprar</button>
+                            <button class="btn-secondary" style="flex: 1; font-size: 13px; padding: 12px 6px" data-producto="{{ $producto->nombre }}" onclick="abrirWhatsappProducto(this)">Más info</button>
+                        </div>
                     </div>
                 </div>
             @endforeach
-            <div id="sin-productos-region" style="display: none; width: 100%; text-align: center; padding: 40px 20px; color: #6b7280">
+            <div id="sin-productos-region" style="display: none; grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: #6b7280">
                 <p style="font-size: 15px">Aún no tenemos catálogo cargado para tu país —
                     <a href="#" onclick="abrirWhatsapp('Hola, me interesa saber más sobre los productos 4Life disponibles en mi país'); return false;" style="color: #0891b2; font-weight: 600; text-decoration: underline">contáctanos por WhatsApp</a>.
                 </p>
             </div>
         @else
-            <div class="card p32" style="flex: 1; min-width: 280px; cursor: pointer; border: 2px solid #f0f0f0"
-                 onmouseover="this.style.borderColor='#0891b2';this.style.background='#f0f9ff'"
-                 onmouseout="this.style.borderColor='#f0f0f0';this.style.background='#fff'">
-                <div class="text-center">
-                    <img src="{{ asset('images/product-trifactor.png') }}" alt="4Life Trifactor" style="width: 100%; max-width: 200px; height: auto; margin-bottom: 16px; border-radius: 8px; object-fit: contain">
-                    <h3 class="fs24 fw7" style="margin-bottom: 12px; color: #0891b2">Inmunidad Avanzada</h3>
-                    <p style="color: #6b7280; margin-bottom: 20px">Apoya tu complementación diaria con la nanotecnología exclusiva de 4Life</p>
-                    <ul style="text-align: left; list-style: none; margin-bottom: 20px">
-                        <li style="padding: 8px 0; padding-left: 24px; position: relative"><span style="position: absolute; left: 0">✓</span>Moléculas de transferencia de inmunidad</li>
-                        <li style="padding: 8px 0; padding-left: 24px; position: relative"><span style="position: absolute; left: 0">✓</span>Refuerzo de células N y K</li>
-                        <li style="padding: 8px 0; padding-left: 24px; position: relative"><span style="position: absolute; left: 0">✓</span>Cápsulas Vegetales</li>
-                    </ul>
-                    <button class="btn-primary w100" style="font-size: 14px; padding: 12px">Ver Productos</button>
+            <div class="producto-card">
+                <div class="producto-card-img-wrap">
+                    <img src="{{ asset('images/product-trifactor.png') }}" alt="4Life Trifactor" class="producto-card-img">
+                </div>
+                <div class="producto-card-body">
+                    <h3 class="producto-card-titulo" style="color: #0891b2">Inmunidad Avanzada</h3>
+                    <div style="flex: 1">
+                        <p class="producto-card-intro">Apoya tu complementación diaria con la nanotecnología exclusiva de 4Life.</p>
+                        <ul class="producto-card-lista">
+                            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg><span>Moléculas de transferencia de inmunidad</span></li>
+                            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg><span>Refuerzo de células N y K</span></li>
+                            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg><span>Cápsulas vegetales</span></li>
+                        </ul>
+                    </div>
+                    <div class="fx gap8">
+                        <button class="btn-primary" style="flex: 1; font-size: 13px; padding: 12px 6px" onclick="abrirTienda()">Comprar</button>
+                        <button class="btn-secondary" style="flex: 1; font-size: 13px; padding: 12px 6px" data-producto="Inmunidad Avanzada" onclick="abrirWhatsappProducto(this)">Más info</button>
+                    </div>
                 </div>
             </div>
 
-            <div class="card p32" style="flex: 1; min-width: 280px; cursor: pointer; border: 2px solid #f0f0f0"
-                 onmouseover="this.style.borderColor='#10b981';this.style.background='#f0fdf4'"
-                 onmouseout="this.style.borderColor='#f0f0f0';this.style.background='#fff'">
-                <div class="text-center">
-                    <img src="{{ asset('images/product-riovida.png') }}" alt="4Life RioVida" style="width: 100%; max-width: 200px; height: auto; margin-bottom: 16px; border-radius: 8px; object-fit: contain">
-                    <h3 class="fs24 fw7" style="margin-bottom: 12px; color: #10b981">Energía &amp; Vitalidad</h3>
-                    <p style="color: #6b7280; margin-bottom: 20px">4Life RioVida™ con antioxidantes naturales para energía sostenida</p>
-                    <ul style="text-align: left; list-style: none; margin-bottom: 20px">
-                        <li style="padding: 8px 0; padding-left: 24px; position: relative"><span style="position: absolute; left: 0">✓</span>Jugo de Granada + Acai</li>
-                        <li style="padding: 8px 0; padding-left: 24px; position: relative"><span style="position: absolute; left: 0">✓</span>Antioxidantes Naturales</li>
-                        <li style="padding: 8px 0; padding-left: 24px; position: relative"><span style="position: absolute; left: 0">✓</span>Vitalidad</li>
-                    </ul>
-                    <button class="btn-primary w100" style="font-size: 14px; padding: 12px">Ver Productos</button>
+            <div class="producto-card">
+                <div class="producto-card-img-wrap">
+                    <img src="{{ asset('images/product-riovida.png') }}" alt="4Life RioVida" class="producto-card-img">
+                </div>
+                <div class="producto-card-body">
+                    <h3 class="producto-card-titulo" style="color: #10b981">Energía &amp; Vitalidad</h3>
+                    <div style="flex: 1">
+                        <p class="producto-card-intro">4Life RioVida™ con antioxidantes naturales para energía sostenida.</p>
+                        <ul class="producto-card-lista">
+                            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg><span>Jugo de granada + acai</span></li>
+                            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg><span>Antioxidantes naturales</span></li>
+                            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg><span>Vitalidad</span></li>
+                        </ul>
+                    </div>
+                    <div class="fx gap8">
+                        <button class="btn-primary" style="flex: 1; font-size: 13px; padding: 12px 6px" onclick="abrirTienda()">Comprar</button>
+                        <button class="btn-secondary" style="flex: 1; font-size: 13px; padding: 12px 6px" data-producto="Energía &amp; Vitalidad" onclick="abrirWhatsappProducto(this)">Más info</button>
+                    </div>
                 </div>
             </div>
 
-            <div class="card p32" style="flex: 1; min-width: 280px; cursor: pointer; border: 2px solid #f0f0f0"
-                 onmouseover="this.style.borderColor='#84cc16';this.style.background='#fefce8'"
-                 onmouseout="this.style.borderColor='#f0f0f0';this.style.background='#fff'">
-                <div class="text-center">
-                    <img src="{{ asset('images/product-tf-ag-pro.png') }}" alt="4Life TF AG Pro" style="width: 100%; max-width: 200px; height: auto; margin-bottom: 16px; border-radius: 8px; object-fit: contain">
-                    <h3 class="fs24 fw7" style="margin-bottom: 12px; color: #84cc16">Envejecimiento Saludable</h3>
-                    <p style="color: #6b7280; margin-bottom: 20px">Ayuda a mantener las células más jóvenes y funcionales</p>
-                    <ul style="text-align: left; list-style: none; margin-bottom: 20px">
-                        <li style="padding: 8px 0; padding-left: 24px; position: relative"><span style="position: absolute; left: 0">✓</span>Aumenta La Energía Célular NAD+</li>
-                        <li style="padding: 8px 0; padding-left: 24px; position: relative"><span style="position: absolute; left: 0">✓</span>Componentes naturales</li>
-                        <li style="padding: 8px 0; padding-left: 24px; position: relative"><span style="position: absolute; left: 0">✓</span>Eliminar Células Zombie</li>
-                    </ul>
-                    <button class="btn-primary w100" style="font-size: 14px; padding: 12px">Ver Productos</button>
+            <div class="producto-card">
+                <div class="producto-card-img-wrap">
+                    <img src="{{ asset('images/product-tf-ag-pro.png') }}" alt="4Life TF AG Pro" class="producto-card-img">
+                </div>
+                <div class="producto-card-body">
+                    <h3 class="producto-card-titulo" style="color: #84cc16">Envejecimiento Saludable</h3>
+                    <div style="flex: 1">
+                        <p class="producto-card-intro">Ayuda a mantener las células más jóvenes y funcionales.</p>
+                        <ul class="producto-card-lista">
+                            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg><span>Aumenta la energía celular NAD+</span></li>
+                            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg><span>Componentes naturales</span></li>
+                            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg><span>Elimina células zombie</span></li>
+                        </ul>
+                    </div>
+                    <div class="fx gap8">
+                        <button class="btn-primary" style="flex: 1; font-size: 13px; padding: 12px 6px" onclick="abrirTienda()">Comprar</button>
+                        <button class="btn-secondary" style="flex: 1; font-size: 13px; padding: 12px 6px" data-producto="Envejecimiento Saludable" onclick="abrirWhatsappProducto(this)">Más info</button>
+                    </div>
                 </div>
             </div>
         @endif
@@ -216,7 +293,11 @@
                 <p style="color: #6b7280; font-size: 13px">Comunidad global de bienestar</p>
             </div>
             <div style="flex: 1; min-width: 200px; text-align: center">
-                <div style="font: 800 32px 'Poppins'; color: #be185d; margin-bottom: 8px">✓</div>
+                <div style="color: #be185d; margin-bottom: 8px">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin: 0 auto">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
                 <p class="fw6" style="margin-bottom: 8px">Garantía 100%</p>
                 <p style="color: #6b7280; font-size: 13px">Satisfacción garantizada o tu dinero de vuelta</p>
             </div>
@@ -227,7 +308,13 @@
 {{-- ── UBICACIÓN ─────────────────────────────────────────────────────── --}}
 <section class="p48" style="padding: 80px 20px; background: #fff">
     <div class="container">
-        <h2 class="section-title">📍 Nuestra Ubicación</h2>
+        <h2 class="section-title" style="display: flex; align-items: center; gap: 12px">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="1.5" style="flex-shrink: 0">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
+            </svg>
+            Nuestra Ubicación
+        </h2>
         <p class="section-subtitle">Estamos aquí para servirte</p>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start" class="ubicacion-grid">
             <div>
@@ -246,13 +333,19 @@
 
                 <div id="ubicacion-info" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px">
                     <div id="bloque-direccion" style="padding: 16px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #0891b2">
-                        <p style="color: #6b7280; font-size: 14px">📍 <strong style="color: #0891b2">Ubicación:</strong> <span data-field="direccion"></span></p>
+                        <p style="color: #6b7280; font-size: 14px">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2" style="display: inline-block; vertical-align: -2px"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                            <strong style="color: #0891b2">Ubicación:</strong> <span data-field="direccion"></span></p>
                     </div>
                     <div id="bloque-whatsapp" style="padding: 16px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #0891b2">
-                        <p style="color: #6b7280; font-size: 14px">📱 <strong style="color: #0891b2">WhatsApp:</strong> <a href="#" onclick="abrirWhatsapp('Hola, me interesa saber más sobre 4Life'); return false;" style="color: #0891b2; font-weight: 600; text-decoration: underline">Contacta aquí</a></p>
+                        <p style="color: #6b7280; font-size: 14px">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2" style="display: inline-block; vertical-align: -2px"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 10.5h7.5m-7.5 3h4.5m4.5-9H5.25A2.25 2.25 0 003 6.75v7.5A2.25 2.25 0 005.25 16.5H9l3 3 3-3h3.75A2.25 2.25 0 0021 14.25v-7.5A2.25 2.25 0 0018.75 4.5z"/></svg>
+                            <strong style="color: #0891b2">WhatsApp:</strong> <a href="#" onclick="abrirWhatsapp('Hola, me interesa saber más sobre 4Life'); return false;" style="color: #0891b2; font-weight: 600; text-decoration: underline">Contacta aquí</a></p>
                     </div>
                     <div style="padding: 16px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #0891b2">
-                        <p style="color: #6b7280; font-size: 14px">⏰ <strong style="color: #0891b2">Disponibilidad:</strong> 24/7</p>
+                        <p style="color: #6b7280; font-size: 14px">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2" style="display: inline-block; vertical-align: -2px"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9" stroke-linecap="round"/></svg>
+                            <strong style="color: #0891b2">Disponibilidad:</strong> 24/7</p>
                     </div>
                 </div>
                 <button class="btn-primary" onclick="abrirWhatsapp('Hola, quiero saber más sobre bienestar 4Life')">Enviar Mensaje WhatsApp</button>
@@ -283,17 +376,30 @@
             </div>
             <div style="flex: 1; min-width: 200px">
                 <h4 class="fw6 mb16">Contacto - EIRA</h4>
-                <p style="color: #d1d5db; font-size: 14px; margin-bottom: 8px">👤 EIRA - Consultor 4Life</p>
-                <p id="footer-direccion" style="display: none; color: #d1d5db; font-size: 14px; margin-bottom: 8px">📍 Ubicación: <span data-field="direccion-corta"></span></p>
-                <p id="footer-whatsapp" style="display: none; color: #d1d5db; font-size: 14px; margin-bottom: 8px">📞 WhatsApp: <a href="#" onclick="abrirWhatsapp('Hola, me interesa saber más sobre bienestar integral EIRA 4Life'); return false;" style="color: #0891b2; font-weight: 600">Chat aquí</a></p>
-                <p id="footer-codigo" style="display: none; color: #d1d5db; font-size: 14px; margin-bottom: 8px">🔑 Código 4Life: <span data-field="codigo4life"></span></p>
-                <p id="footer-tienda" style="display: none; color: #d1d5db; font-size: 14px">🌐 <a href="#" onclick="abrirTienda(); return false;" data-field="tienda-link" style="color: #0891b2; font-weight: 600"></a></p>
+                <p style="color: #d1d5db; font-size: 14px; margin-bottom: 8px">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" style="display: inline-block; vertical-align: -2px"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a7.5 7.5 0 0115 0"/></svg>
+                    EIRA - Consultor 4Life</p>
+                <p id="footer-direccion" style="display: none; color: #d1d5db; font-size: 14px; margin-bottom: 8px">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" style="display: inline-block; vertical-align: -2px"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                    Ubicación: <span data-field="direccion-corta"></span></p>
+                <p id="footer-whatsapp" style="display: none; color: #d1d5db; font-size: 14px; margin-bottom: 8px">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" style="display: inline-block; vertical-align: -2px"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h1.5a1.5 1.5 0 001.5-1.5v-2.379a1 1 0 00-.804-.98l-4.111-.822a1 1 0 00-.98.29l-.877.878a1.5 1.5 0 01-1.591.358c-1.612-.61-3.32-2.316-3.929-3.928a1.5 1.5 0 01.357-1.591l.878-.877a1 1 0 00.29-.98l-.822-4.11a1 1 0 00-.98-.805H3.75a1.5 1.5 0 00-1.5 1.5v.75z"/></svg>
+                    WhatsApp: <a href="#" onclick="abrirWhatsapp('Hola, me interesa saber más sobre bienestar integral EIRA 4Life'); return false;" style="color: #0891b2; font-weight: 600">Chat aquí</a></p>
+                <p id="footer-codigo" style="display: none; color: #d1d5db; font-size: 14px; margin-bottom: 8px">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" style="display: inline-block; vertical-align: -2px"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
+                    Código 4Life: <span data-field="codigo4life"></span></p>
+                <p id="footer-tienda" style="display: none; color: #d1d5db; font-size: 14px">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" style="display: inline-block; vertical-align: -2px"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18z"/><path stroke-linecap="round" stroke-linejoin="round" d="M3.6 9h16.8M3.6 15h16.8M12 3c2.4 2.5 3.7 5.6 3.7 9s-1.3 6.5-3.7 9c-2.4-2.5-3.7-5.6-3.7-9s1.3-6.5 3.7-9z"/></svg>
+                    <a href="#" onclick="abrirTienda(); return false;" data-field="tienda-link" style="color: #0891b2; font-weight: 600"></a></p>
             </div>
             <div style="flex: 1; min-width: 200px">
                 <h4 class="fw6 mb16">Información</h4>
-                <p style="color: #d1d5db; font-size: 14px; margin-bottom: 8px">✓ Garantía 100% satisfacción</p>
-                <p style="color: #d1d5db; font-size: 14px; margin-bottom: 8px">✓ Envíos rápidos y seguros</p>
-                <p style="color: #d1d5db; font-size: 14px">✓ Soporte 24/7</p>
+                @php
+                    $checkFooter = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" style="display:inline-block;vertical-align:-2px"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>';
+                @endphp
+                <p style="color: #d1d5db; font-size: 14px; margin-bottom: 8px">{!! $checkFooter !!} Garantía 100% satisfacción</p>
+                <p style="color: #d1d5db; font-size: 14px; margin-bottom: 8px">{!! $checkFooter !!} Envíos rápidos y seguros</p>
+                <p style="color: #d1d5db; font-size: 14px">{!! $checkFooter !!} Soporte 24/7</p>
             </div>
         </div>
         <div style="border-top: 1px solid #374151; padding-top: 24px; text-align: center">
@@ -369,14 +475,21 @@
 
     function abrirWhatsapp(mensaje) {
         const r = regionActual();
-        if (!r || !Array.isArray(r.whatsapp) || r.whatsapp.length === 0) {
+        if (!r || !r.whatsapp) {
             alert('Aún no tenemos WhatsApp configurado para tu país. Cambia de país arriba a la derecha o vuelve pronto.');
             return;
         }
-        // Varios agentes de ventas por país — se reparte al azar entre ellos.
-        const numero = r.whatsapp[Math.floor(Math.random() * r.whatsapp.length)];
-        const url = 'https://wa.me/' + numero + (mensaje ? ('?text=' + encodeURIComponent(mensaje)) : '');
+        // r.whatsapp ya viene resuelto del servidor: es el agente "de turno"
+        // ahora mismo (rota cada 10 min) — el mismo que recibe el clic de
+        // "Comprar" (r.tiendaUrl), para que la venta quede en su tienda.
+        const url = 'https://wa.me/' + r.whatsapp + (mensaje ? ('?text=' + encodeURIComponent(mensaje)) : '');
         window.open(url, '_blank');
+    }
+
+    /** Botón "Más info" de una tarjeta de producto — arma el mensaje con el nombre del producto. */
+    function abrirWhatsappProducto(boton) {
+        const nombre = boton.dataset.producto || 'este producto';
+        abrirWhatsapp('Hola, quiero más información sobre ' + nombre);
     }
 
     function abrirTienda() {
@@ -402,7 +515,7 @@
 
         // Ubicación: dirección y WhatsApp
         const tieneDireccion = !!r.direccion;
-        const tieneWhatsapp  = Array.isArray(r.whatsapp) && r.whatsapp.length > 0;
+        const tieneWhatsapp  = !!r.whatsapp;
         const sinContacto    = !tieneDireccion && !tieneWhatsapp;
 
         document.getElementById('ubicacion-info').style.display = sinContacto ? 'none' : 'flex';

@@ -64,6 +64,9 @@
                             @php $regionIds = $producto->regions->pluck('id')->all(); @endphp
                             <tr>
                                 <td class="px-5 py-4 align-top">
+                                    @if ($producto->categoria)
+                                        <span class="inline-block text-[10px] font-semibold uppercase tracking-wide text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full mb-1">{{ $producto->categoria }}</span>
+                                    @endif
                                     <p class="font-semibold text-gray-900">{{ $producto->nombre }}</p>
                                     @if ($producto->precio)
                                         <p class="text-xs text-emerald-700 font-medium mt-0.5">{{ $producto->precio }}</p>

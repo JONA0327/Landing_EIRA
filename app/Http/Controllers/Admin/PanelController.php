@@ -197,12 +197,22 @@ class PanelController extends Controller
 
         $vistos = 0;
         $nuevosConPais = 0;
+        $noDisponibles = 0;
         foreach ($resultado['data'] as $registro) {
             if (! isset($registro['id'])) {
                 continue;
             }
 
             $datos = $registro['datos'] ?? $registro;
+
+            // Un producto marcado "no disponible" en el CRM no se trae al panel;
+            // si ya estaba (se marcó no disponible después de un sync anterior),
+            // se quita para que tampoco quede colgado en la landing.
+            if (! $this->estaDisponible($datos)) {
+                CatalogProduct::where('crm_record_id', $registro['id'])->delete();
+                $noDisponibles++;
+                continue;
+            }
 
             $producto = CatalogProduct::updateOrCreate(
                 ['crm_record_id' => $registro['id']],
@@ -224,6 +234,9 @@ class PanelController extends Controller
         if ($nuevosConPais > 0) {
             $mensaje .= " {$nuevosConPais} nuevo(s) con país(es) detectado(s) automáticamente del catálogo.";
         }
+        if ($noDisponibles > 0) {
+            $mensaje .= " {$noDisponibles} no disponible(s) — no se muestran en el panel.";
+        }
 
         return back()->with('success', $mensaje);
     }
@@ -239,6 +252,25 @@ class PanelController extends Controller
             return is_array($valor) ? $valor : [(string) $valor];
         }
         return [];
+    }
+
+    /**
+     * Lee el campo "disponible" del catálogo del CRM. Si el CRM no manda ese
+     * campo en un registro, se asume disponible (no hay razón para excluirlo
+     * por la ausencia de un campo que ni siquiera usa ese catálogo).
+     */
+    private function estaDisponible(array $datos): bool
+    {
+        $valor = $datos['disponible'] ?? $datos['disponibilidad'] ?? null;
+        if ($valor === null) {
+            return true;
+        }
+        if (is_bool($valor)) {
+            return $valor;
+        }
+
+        $normal = \Illuminate\Support\Str::of((string) $valor)->ascii()->lower()->trim()->toString();
+        return in_array($normal, ['disponible', 'si', 'sí', 'yes', 'true', '1', 'activo'], true);
     }
 
     /**

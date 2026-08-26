@@ -10,19 +10,25 @@ use Illuminate\Http\Request;
 class RegionController extends Controller
 {
     /**
-     * Guarda WhatsApp(s), código 4Life, tienda y dirección de UNA región.
-     * Se llama una vez por cada tarjeta de región del panel (cada una es su
-     * propio <form>), así un error de validación en una no afecta a las demás.
+     * Guarda WhatsApp(s) + tienda de cada agente, código 4Life, dirección y
+     * tienda general de UNA región. Se llama una vez por cada tarjeta de
+     * región del panel (cada una es su propio <form>), así un error de
+     * validación en una no afecta a las demás.
      *
-     * Los números de WhatsApp se reemplazan por completo con lo que llegue en
-     * whatsapp_numeros[] (uno por agente de ventas de esa región) — la landing
-     * elige uno al azar entre ellos cada vez que alguien manda un mensaje.
+     * Los agentes (número + su propia tienda) se reemplazan por completo con
+     * lo que llegue en whatsapp_numeros[] / whatsapp_tiendas[] — ambos van
+     * en el MISMO índice por fila (el JS del panel los agrupa en la misma
+     * fila removible), así quedan correctamente emparejados aunque se borren
+     * filas de en medio. La landing rota cuál está "de turno" cada 10
+     * minutos — ver Region::agenteActivo().
      */
     public function update(Request $request, Region $region): RedirectResponse
     {
         $validated = $request->validate([
             'whatsapp_numeros'   => ['array'],
             'whatsapp_numeros.*' => ['nullable', 'string', 'max:20', 'regex:/^[0-9]+$/'],
+            'whatsapp_tiendas'   => ['array'],
+            'whatsapp_tiendas.*' => ['nullable', 'url', 'max:255'],
             'codigo_4life'       => ['nullable', 'string', 'max:50'],
             'tienda_url'         => ['nullable', 'url', 'max:255'],
             'direccion'          => ['nullable', 'string', 'max:500'],
@@ -34,13 +40,19 @@ class RegionController extends Controller
             'whatsapp_numeros.*.regex' => 'Solo dígitos, sin "+", espacios ni guiones (ej. 528116642343).',
         ]);
 
-        $numeros = collect($validated['whatsapp_numeros'] ?? [])
-            ->map(fn ($n) => trim((string) $n))
-            ->filter(fn ($n) => $n !== '')
-            ->unique()
+        $numerosInput = $validated['whatsapp_numeros'] ?? [];
+        $tiendasInput = $validated['whatsapp_tiendas'] ?? [];
+
+        $agentes = collect($numerosInput)
+            ->map(fn ($numero, $i) => [
+                'numero'     => trim((string) $numero),
+                'tienda_url' => trim((string) ($tiendasInput[$i] ?? '')) ?: null,
+            ])
+            ->filter(fn ($a) => $a['numero'] !== '')
+            ->unique('numero')
             ->values();
 
-        unset($validated['whatsapp_numeros']);
+        unset($validated['whatsapp_numeros'], $validated['whatsapp_tiendas']);
         $validated['activo'] = $request->boolean('activo');
 
         // Limpia bytes UTF-8 inválidos (typos de codificación, copy-paste raro)
@@ -55,8 +67,8 @@ class RegionController extends Controller
         $region->update($validated);
 
         $region->whatsappNumbers()->delete();
-        foreach ($numeros as $numero) {
-            $region->whatsappNumbers()->create(['numero' => $numero]);
+        foreach ($agentes as $agente) {
+            $region->whatsappNumbers()->create($agente);
         }
 
         return back()->with('success', "Región {$region->nombre} actualizada.");

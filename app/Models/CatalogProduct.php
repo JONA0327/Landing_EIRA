@@ -60,9 +60,40 @@ class CatalogProduct extends Model
         return null;
     }
 
+    /**
+     * En este CRM "producto" no es un nombre suelto: es un objeto
+     * {"categoria": "...", "items": ["4Life RioVida Burst"]} — el nombre real
+     * del producto vive en items[0], y "categoria" es la línea/familia a la
+     * que pertenece (se muestra aparte, como etiqueta).
+     */
+    private function productoRaw(): array
+    {
+        $valor = ($this->datos ?? [])['producto'] ?? null;
+        return is_array($valor) ? $valor : [];
+    }
+
     public function getNombreAttribute(): string
     {
-        return $this->primero(['nombre', 'name', 'titulo', 'title', 'producto']) ?? ('Producto #' . $this->crm_record_id);
+        $items = $this->productoRaw()['items'] ?? null;
+        if (is_array($items)) {
+            $item = collect($items)->first(fn ($v) => ! is_array($v) && trim((string) $v) !== '');
+            if ($item !== null) {
+                return trim((string) $item);
+            }
+        }
+
+        return $this->primero(['nombre', 'name', 'titulo', 'title']) ?? ('Producto #' . $this->crm_record_id);
+    }
+
+    /** La categoría/línea del producto (ej. "Sistema Inmunológico") — se muestra como etiqueta, no como título. */
+    public function getCategoriaAttribute(): ?string
+    {
+        $categoria = $this->productoRaw()['categoria'] ?? null;
+        if (is_string($categoria) && trim($categoria) !== '') {
+            return trim($categoria);
+        }
+
+        return $this->primero(['categoria', 'category', 'linea', 'línea']);
     }
 
     public function getDescripcionAttribute(): ?string

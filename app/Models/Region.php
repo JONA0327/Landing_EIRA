@@ -40,17 +40,47 @@ class Region extends Model
         return $this->hasMany(RegionWhatsappNumber::class);
     }
 
-    /** Un número al azar entre los agentes de esta región, o null si no hay ninguno. */
-    public function numeroWhatsappAleatorio(): ?string
+    /** Cada cuántos segundos rota el agente "de turno" — 10 minutos. */
+    private const VENTANA_ROTACION_SEGUNDOS = 600;
+
+    /**
+     * El agente (número + su propia tienda 4Life) que está "de turno" ahora
+     * mismo. Rota cada 10 minutos de forma determinística — el mismo cálculo
+     * da el mismo resultado para todos los visitantes durante esa ventana de
+     * tiempo, sin necesitar guardar ningún estado ni cron — así el WhatsApp
+     * y el botón "Comprar" apuntan SIEMPRE al mismo agente mientras dure su
+     * turno, en vez de mandar cada clic a alguien distinto.
+     */
+    public function agenteActivo(): ?RegionWhatsappNumber
     {
-        $numeros = $this->whatsappNumbers()->pluck('numero');
-        return $numeros->isNotEmpty() ? $numeros->random() : null;
+        $agentes = $this->whatsappNumbers()->orderBy('id')->get();
+        if ($agentes->isEmpty()) {
+            return null;
+        }
+
+        $ventana = intdiv(time(), self::VENTANA_ROTACION_SEGUNDOS);
+        $indice  = crc32($this->slug . '|' . $ventana) % $agentes->count();
+
+        return $agentes[$indice];
     }
 
-    /** Link de WhatsApp listo para usar (wa.me) con un agente al azar, o null si no hay ninguno configurado. */
+    /** Número del agente de turno, o null si esta región no tiene ninguno configurado. */
+    public function numeroWhatsappActivo(): ?string
+    {
+        return $this->agenteActivo()?->numero;
+    }
+
+    /** Tienda del agente de turno (su propio código) — si no la puso, cae a la tienda general de la región. */
+    public function tiendaActiva(): ?string
+    {
+        $agente = $this->agenteActivo();
+        return $agente?->tienda_url ?: $this->tienda_url;
+    }
+
+    /** Link de WhatsApp listo para usar (wa.me) con el agente de turno, o null si no hay ninguno configurado. */
     public function whatsappLink(?string $mensaje = null): ?string
     {
-        $numero = $this->numeroWhatsappAleatorio();
+        $numero = $this->numeroWhatsappActivo();
         if (! $numero) {
             return null;
         }

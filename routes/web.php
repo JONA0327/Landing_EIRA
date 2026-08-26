@@ -31,19 +31,24 @@ Route::get('/', function (Request $request, IpGeoService $ipGeo) {
 
     // Datos de cada región listos para el JS de la landing (selector de país,
     // WhatsApp/tienda/dirección dinámicos, mapa) — evita construir el array
-    // dentro del Blade. "whatsapp" es un arreglo (puede haber varios agentes
-    // por país) — el JS elige uno al azar cada vez que se manda un mensaje.
-    $regionesJs = $regiones->mapWithKeys(fn ($r) => [$r->slug => [
-        'nombre'         => $r->nombre,
-        'bandera'        => $r->bandera,
-        'whatsapp'       => $r->whatsappNumbers->pluck('numero')->values(),
-        'direccion'      => $r->direccion,
-        'direccionCorta' => $r->direccion_corta,
-        'lat'            => $r->lat,
-        'lng'            => $r->lng,
-        'tiendaUrl'      => $r->tienda_url,
-        'codigo4life'    => $r->codigo_4life,
-    ]]);
+    // dentro del Blade. "whatsapp" y "tiendaUrl" son del agente que está DE
+    // TURNO ahora mismo (rota cada 10 min, ver Region::agenteActivo()) — así
+    // el mismo agente recibe el WhatsApp y el clic de "Comprar" mientras dure
+    // su turno, en vez de repartir cada clic a alguien distinto.
+    $regionesJs = $regiones->mapWithKeys(function ($r) {
+        $agente = $r->agenteActivo();
+        return [$r->slug => [
+            'nombre'         => $r->nombre,
+            'bandera'        => $r->bandera,
+            'whatsapp'       => $agente?->numero,
+            'direccion'      => $r->direccion,
+            'direccionCorta' => $r->direccion_corta,
+            'lat'            => $r->lat,
+            'lng'            => $r->lng,
+            'tiendaUrl'      => $agente?->tienda_url ?: $r->tienda_url,
+            'codigo4life'    => $r->codigo_4life,
+        ]];
+    });
 
     // JSON_INVALID_UTF8_SUBSTITUTE + el fallback '{}' evitan que un campo con
     // bytes UTF-8 corruptos (typo, copy-paste raro) tumbe json_encode() y deje

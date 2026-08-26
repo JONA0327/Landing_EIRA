@@ -30,12 +30,15 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Números de WhatsApp (uno por agente de ventas — se elige uno al azar en cada mensaje)</label>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Agentes de ventas (número + su propia tienda 4Life — rota cuál está de turno cada 10 min)</label>
                     <div class="whatsapp-numeros-list space-y-2">
                         @forelse ($region->whatsappNumbers as $numero)
                             <div class="flex items-center gap-2">
                                 <input type="text" name="whatsapp_numeros[]" value="{{ $numero->numero }}"
                                        placeholder="521XXXXXXXXXX"
+                                       class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                <input type="url" name="whatsapp_tiendas[]" value="{{ $numero->tienda_url }}"
+                                       placeholder="https://tienda-del-agente.4life.com"
                                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm">
                                 <button type="button" onclick="this.parentElement.remove()"
                                         class="text-red-500 hover:text-red-700 text-lg leading-none px-1.5" title="Quitar">×</button>
@@ -45,13 +48,16 @@
                                 <input type="text" name="whatsapp_numeros[]" value=""
                                        placeholder="521XXXXXXXXXX"
                                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                <input type="url" name="whatsapp_tiendas[]" value=""
+                                       placeholder="https://tienda-del-agente.4life.com"
+                                       class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm">
                                 <button type="button" onclick="this.parentElement.remove()"
                                         class="text-red-500 hover:text-red-700 text-lg leading-none px-1.5" title="Quitar">×</button>
                             </div>
                         @endforelse
                     </div>
                     <button type="button" onclick="agregarNumeroWhatsapp(this)"
-                            class="mt-2 text-xs text-emerald-700 hover:text-emerald-800 font-medium">+ Agregar número</button>
+                            class="mt-2 text-xs text-emerald-700 hover:text-emerald-800 font-medium">+ Agregar agente</button>
                 </div>
 
                 <div>
@@ -62,7 +68,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">URL de la tienda 4Life de este país</label>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">URL de tienda general del país (respaldo si un agente no tiene tienda propia)</label>
                     <input type="url" name="tienda_url" value="{{ old('tienda_url', $region->tienda_url) }}"
                            placeholder="https://pais.4life.com"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
@@ -112,6 +118,7 @@
         const fila = document.createElement('div');
         fila.className = 'flex items-center gap-2';
         fila.innerHTML = '<input type="text" name="whatsapp_numeros[]" placeholder="521XXXXXXXXXX" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm">'
+            + '<input type="url" name="whatsapp_tiendas[]" placeholder="https://tienda-del-agente.4life.com" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm">'
             + '<button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 text-lg leading-none px-1.5" title="Quitar">×</button>';
         lista.appendChild(fila);
         fila.querySelector('input').focus();
