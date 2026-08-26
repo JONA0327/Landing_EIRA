@@ -30,23 +30,26 @@ Route::get('/', function (Request $request, IpGeoService $ipGeo) {
     $ipDetectadaSlug = ($paisPorIp && $regiones->contains('slug', $paisPorIp)) ? $paisPorIp : null;
 
     // Datos de cada región listos para el JS de la landing (selector de país,
-    // WhatsApp/tienda/dirección dinámicos, mapa) — evita construir el array
-    // dentro del Blade. "whatsapp" y "tiendaUrl" son del agente que está DE
+    // WhatsApp/tienda/código/dirección dinámicos, mapa) — evita construir el
+    // array dentro del Blade. "whatsapp", "tiendaUrl", "codigo4life",
+    // "direccion", "direccionCorta", "lat" y "lng" son del agente que está DE
     // TURNO ahora mismo (rota cada 10 min, ver Region::agenteActivo()) — así
-    // el mismo agente recibe el WhatsApp y el clic de "Comprar" mientras dure
-    // su turno, en vez de repartir cada clic a alguien distinto.
+    // el mismo agente recibe el WhatsApp, el clic de "Comprar", el código Y
+    // la ubicación que se muestra, todo junto, mientras dure su turno, en
+    // vez de repartir cada uno a alguien distinto. Si el agente no puso su
+    // propia ubicación, cae a la general de la región.
     $regionesJs = $regiones->mapWithKeys(function ($r) {
         $agente = $r->agenteActivo();
         return [$r->slug => [
             'nombre'         => $r->nombre,
             'bandera'        => $r->bandera,
             'whatsapp'       => $agente?->numero,
-            'direccion'      => $r->direccion,
-            'direccionCorta' => $r->direccion_corta,
-            'lat'            => $r->lat,
-            'lng'            => $r->lng,
+            'direccion'      => $agente?->direccion ?: $r->direccion,
+            'direccionCorta' => $agente?->direccion_corta ?: $r->direccion_corta,
+            'lat'            => $agente?->lat ?? $r->lat,
+            'lng'            => $agente?->lng ?? $r->lng,
             'tiendaUrl'      => $agente?->tienda_url ?: $r->tienda_url,
-            'codigo4life'    => $r->codigo_4life,
+            'codigo4life'    => $agente?->codigo_4life ?: $r->codigo_4life,
         ]];
     });
 

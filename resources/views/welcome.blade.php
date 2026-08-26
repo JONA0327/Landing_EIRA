@@ -94,13 +94,6 @@
                 </button>
             @endforeach
         </div>
-
-        <p style="color: #9ca3af; font-size: 11px; margin-top: 20px; line-height: 1.5; text-align: left">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: -1px; flex-shrink: 0">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V7.5a4.5 4.5 0 10-9 0v3m-1.5 0h12a1.5 1.5 0 011.5 1.5v7.5a1.5 1.5 0 01-1.5 1.5h-12A1.5 1.5 0 014 19.5V12a1.5 1.5 0 011.5-1.5z"/>
-            </svg>
-            Detectamos tu país automáticamente a partir de tu conexión a internet, solo para mostrarte la atención, productos y contacto correspondientes a tu región — no la guardamos ni la compartimos con nadie. Si no es el país correcto, elígelo tú mismo arriba.
-        </p>
     </div>
 </div>
 
@@ -370,15 +363,12 @@
 <footer class="p48" style="padding: 60px 20px; background: #1f2937; color: #fff">
     <div class="container">
         <div class="fx gap32 wrap mb48">
-            <div style="flex: 1; min-width: 200px">
+            <div style="flex: 1; min-width: 220px">
                 <h4 class="fw6 mb16">EIRA - Bienestar 4Life</h4>
                 <p style="color: #d1d5db; font-size: 14px; line-height: 1.8">Productos de bienestar respaldados por ciencia. Transforma tu salud, transforma tu vida.</p>
             </div>
-            <div style="flex: 1; min-width: 200px">
-                <h4 class="fw6 mb16">Contacto - EIRA</h4>
-                <p style="color: #d1d5db; font-size: 14px; margin-bottom: 8px">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" style="display: inline-block; vertical-align: -2px"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a7.5 7.5 0 0115 0"/></svg>
-                    EIRA - Consultor 4Life</p>
+            <div style="flex: 1; min-width: 220px">
+                <h4 class="fw6 mb16">Contacto</h4>
                 <p id="footer-direccion" style="display: none; color: #d1d5db; font-size: 14px; margin-bottom: 8px">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" style="display: inline-block; vertical-align: -2px"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
                     Ubicación: <span data-field="direccion-corta"></span></p>
@@ -392,18 +382,10 @@
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" style="display: inline-block; vertical-align: -2px"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18z"/><path stroke-linecap="round" stroke-linejoin="round" d="M3.6 9h16.8M3.6 15h16.8M12 3c2.4 2.5 3.7 5.6 3.7 9s-1.3 6.5-3.7 9c-2.4-2.5-3.7-5.6-3.7-9s1.3-6.5 3.7-9z"/></svg>
                     <a href="#" onclick="abrirTienda(); return false;" data-field="tienda-link" style="color: #0891b2; font-weight: 600"></a></p>
             </div>
-            <div style="flex: 1; min-width: 200px">
-                <h4 class="fw6 mb16">Información</h4>
-                @php
-                    $checkFooter = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" style="display:inline-block;vertical-align:-2px"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>';
-                @endphp
-                <p style="color: #d1d5db; font-size: 14px; margin-bottom: 8px">{!! $checkFooter !!} Garantía 100% satisfacción</p>
-                <p style="color: #d1d5db; font-size: 14px; margin-bottom: 8px">{!! $checkFooter !!} Envíos rápidos y seguros</p>
-                <p style="color: #d1d5db; font-size: 14px">{!! $checkFooter !!} Soporte 24/7</p>
-            </div>
         </div>
         <div style="border-top: 1px solid #374151; padding-top: 24px; text-align: center">
-            <p style="color: #9ca3af; font-size: 13px">© {{ date('Y') }} 4Life Research. Todos los derechos reservados. | <a href="#" style="color: #0891b2">Términos</a> · <a href="#" style="color: #0891b2">Privacidad</a></p>
+            <p style="color: #9ca3af; font-size: 12.5px; line-height: 1.7; max-width: 640px; margin: 0 auto 12px">EIRA es un negocio de distribución independiente de 4Life. No somos 4Life Research LC ni una entidad oficial de la marca — los productos y logotipos mencionados son propiedad de sus respectivos dueños.</p>
+            <p style="color: #9ca3af; font-size: 13px">© {{ date('Y') }} EIRA - Bienestar 4Life. Todos los derechos reservados.</p>
         </div>
     </div>
 </footer>

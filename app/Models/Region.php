@@ -70,11 +70,45 @@ class Region extends Model
         return $this->agenteActivo()?->numero;
     }
 
-    /** Tienda del agente de turno (su propio código) — si no la puso, cae a la tienda general de la región. */
+    /** Tienda del agente de turno — si no la puso, cae a la tienda general de la región. */
     public function tiendaActiva(): ?string
     {
         $agente = $this->agenteActivo();
         return $agente?->tienda_url ?: $this->tienda_url;
+    }
+
+    /** Código de referido del agente de turno — si no lo puso, cae al código general de la región. */
+    public function codigoActivo(): ?string
+    {
+        $agente = $this->agenteActivo();
+        return $agente?->codigo_4life ?: $this->codigo_4life;
+    }
+
+    /** Dirección completa del agente de turno — si no la puso, cae a la dirección general de la región. */
+    public function direccionActiva(): ?string
+    {
+        $agente = $this->agenteActivo();
+        return $agente?->direccion ?: $this->direccion;
+    }
+
+    /** Dirección corta (footer) del agente de turno — si no la puso, cae a la de la región. */
+    public function direccionCortaActiva(): ?string
+    {
+        $agente = $this->agenteActivo();
+        return $agente?->direccion_corta ?: $this->direccion_corta;
+    }
+
+    /** Coordenadas del agente de turno para el mapa — si no las puso, caen a las de la región. */
+    public function latActiva(): ?float
+    {
+        $agente = $this->agenteActivo();
+        return $agente?->lat ?? $this->lat;
+    }
+
+    public function lngActiva(): ?float
+    {
+        $agente = $this->agenteActivo();
+        return $agente?->lng ?? $this->lng;
     }
 
     /** Link de WhatsApp listo para usar (wa.me) con el agente de turno, o null si no hay ninguno configurado. */
