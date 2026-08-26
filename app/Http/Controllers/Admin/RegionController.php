@@ -11,10 +11,16 @@ class RegionController extends Controller
 {
     /**
      * Guarda cada agente (WhatsApp + su tienda + su código 4Life + su ciudad
-     * corta para el footer), y los valores generales (código/tienda/ciudad)
-     * de respaldo de UNA región. Se llama una vez por cada tarjeta de región
-     * del panel (cada una es su propio <form>), así un error de validación
-     * en una no afecta a las demás.
+     * corta para el footer) de UNA región. Se llama una vez por cada tarjeta
+     * de región del panel (cada una es su propio <form>), así un error de
+     * validación en una no afecta a las demás.
+     *
+     * El código/tienda/ciudad "generales" del país ya no se editan desde
+     * aquí — cada uno vive en su agente para que la venta quede siempre
+     * atribuida a alguien específico, no a un link genérico del país; si un
+     * valor general quedó de antes (ej. México lo trae del seeder), sigue
+     * funcionando como respaldo (ver Region::tiendaActiva() etc.) hasta que
+     * un agente ponga el suyo propio.
      *
      * Los agentes se reemplazan por completo con lo que llegue en
      * whatsapp_numeros[] / whatsapp_tiendas[] / whatsapp_codigos[] /
@@ -35,9 +41,6 @@ class RegionController extends Controller
             'whatsapp_codigos.*'             => ['nullable', 'string', 'max:50'],
             'whatsapp_direcciones_cortas'    => ['array'],
             'whatsapp_direcciones_cortas.*'  => ['nullable', 'string', 'max:100'],
-            'codigo_4life'                   => ['nullable', 'string', 'max:50'],
-            'tienda_url'                     => ['nullable', 'url', 'max:255'],
-            'direccion_corta'                => ['nullable', 'string', 'max:100'],
             'activo'                         => ['nullable', 'boolean'],
         ], [
             'whatsapp_numeros.*.regex' => 'Solo dígitos, sin "+", espacios ni guiones (ej. 528116642343).',
@@ -59,20 +62,7 @@ class RegionController extends Controller
             ->unique('numero')
             ->values();
 
-        unset(
-            $validated['whatsapp_numeros'], $validated['whatsapp_tiendas'],
-            $validated['whatsapp_codigos'], $validated['whatsapp_direcciones_cortas'],
-        );
-        $validated['activo'] = $request->boolean('activo');
-
-        // Limpia bytes UTF-8 inválidos (typos de codificación, copy-paste raro)
-        // antes de guardar — si no, json_encode() de estos datos en la landing
-        // pública puede fallar y romper todo el script de la página.
-        foreach (['codigo_4life', 'direccion_corta'] as $campo) {
-            if (isset($validated[$campo])) {
-                $validated[$campo] = mb_convert_encoding($validated[$campo], 'UTF-8', 'UTF-8');
-            }
-        }
+        $validated = ['activo' => $request->boolean('activo')];
 
         $region->update($validated);
 

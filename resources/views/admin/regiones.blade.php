@@ -76,27 +76,6 @@
                             class="mt-2 text-xs text-emerald-700 hover:text-emerald-800 font-medium">+ Agregar agente</button>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Código de referido general del país (respaldo si un agente no tiene el suyo)</label>
-                    <input type="text" name="codigo_4life" value="{{ old('codigo_4life', $region->codigo_4life) }}"
-                           placeholder="Ej. 12345678"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">URL de tienda general del país (respaldo si un agente no tiene tienda propia)</label>
-                    <input type="url" name="tienda_url" value="{{ old('tienda_url', $region->tienda_url) }}"
-                           placeholder="https://pais.4life.com"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Dirección corta general del país (footer — respaldo si un agente no tiene la suya)</label>
-                    <input type="text" name="direccion_corta" value="{{ old('direccion_corta', $region->direccion_corta) }}"
-                           placeholder="Ej. Apodaca, NL"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                </div>
-
                 <button type="submit"
                         class="w-full py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold rounded-xl transition-colors">
                     Guardar {{ $region->nombre }}
